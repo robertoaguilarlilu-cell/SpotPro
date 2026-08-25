@@ -1,8 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpotPro — Publicidad exterior en México</title>
+<meta name="description" content="SpotPro conecta marcas con espacios de publicidad exterior — espectaculares, mupis, vallas y pantallas digitales — en toda la República Mexicana.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<title>SpotPro</title>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --paper:#F2F5F9;
@@ -335,14 +341,15 @@
   .portfolio-head{max-width:640px;margin-bottom:36px;}
   .portfolio-head h2{font-size:38px;margin:0 0 10px;}
   .portfolio-head p{color:var(--muted);font-size:16px;line-height:1.55;margin:0;}
-  .portfolio-grid{columns:4 240px;column-gap:16px;}
-  @media (max-width:700px){ .portfolio-grid{columns:2 200px;} }
+  .portfolio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media (max-width:920px){ .portfolio-grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:700px){ .portfolio-grid{grid-template-columns:repeat(2,1fr);} }
   .portfolio-item{
-    break-inside:avoid;margin:0 0 16px;border-radius:16px;overflow:hidden;
+    border-radius:16px;overflow:hidden;
     position:relative;box-shadow:var(--shadow);border:1px solid var(--line);
-    background:var(--surface);
+    background:var(--surface);aspect-ratio:4/5;
   }
-  .portfolio-item img{width:100%;display:block;transition:transform .4s ease;}
+  .portfolio-item img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 32%;transition:transform .4s ease;}
   .portfolio-item:hover img{transform:scale(1.045);}
   .portfolio-cap{
     position:absolute;left:0;right:0;bottom:0;padding:14px 14px 12px;
@@ -351,8 +358,45 @@
   }
   .portfolio-cap b{color:#fff;font-size:12.5px;font-weight:800;letter-spacing:0.02em;}
   .portfolio-cap span{color:#C7CFD8;font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:0.03em;text-transform:uppercase;}
+
+  /* ---------- MODAL / FORMS ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:100;
+    background:rgba(6,8,11,0.6);
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+    padding:28px;box-shadow:var(--shadow);position:relative;
+  }
+  .modal-close{
+    position:absolute;top:18px;right:18px;width:32px;height:32px;border-radius:50%;
+    border:1px solid var(--line);background:var(--paper);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:16px;line-height:1;
+  }
+  .modal h3{font-family:'Bebas Neue',sans-serif;font-size:26px;margin:0 0 6px;}
+  .modal p.modal-sub{color:var(--muted);font-size:13.5px;margin:0 0 20px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .field label{font-size:12.5px;font-weight:700;}
+  .field input, .field select, .field textarea{
+    font-family:'Manrope',sans-serif;font-size:14px;
+    background:var(--paper);color:var(--ink);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .form-msg{font-size:13px;margin-top:10px;display:none;}
+  .form-msg.show{display:block;}
+  .form-msg.ok{color:var(--blue);}
+  .form-msg.err{color:var(--heart);}
+  .modal .btn{width:100%;justify-content:center;margin-top:4px;}
+  .modal .btn[disabled]{opacity:0.6;cursor:default;}
 </style>
 
+</head>
+<body>
 <header class="nav">
   <div class="wrap nav-row">
     <div class="logo">
@@ -376,7 +420,7 @@
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost" href="#">Iniciar sesión</a>
-      <a class="btn btn-primary" href="#">Publicar espacio</a>
+      <a class="btn btn-primary" href="#" onclick="openModal('modal-ally');return false;">Publicar espacio</a>
     </div>
   </div>
 </header>
@@ -611,16 +655,64 @@
       <p class="eyebrow" style="color:var(--blue-ink)">Solicita un espacio</p>
       <h3 class="display">¿BUSCAS DÓNDE ANUNCIARTE?</h3>
       <p>Cuéntanos ciudad, zona y tipo de espacio. Te conectamos con opciones reales de nuestra red de aliados OOH en menos de 48 horas.</p>
-      <a href="#" class="btn btn-primary" style="align-self:flex-start;">Solicitar espacio</a>
+      <a href="#" class="btn btn-primary" style="align-self:flex-start;" onclick="openModal('modal-request');return false;">Solicitar espacio</a>
     </div>
     <div class="split-card owner">
       <p class="eyebrow" style="color:var(--orange-ink)">Registra tu inventario</p>
       <h3 class="display">¿ADMINISTRAS ESPACIOS OOH?</h3>
       <p>Súmate como aliado, publica tu inventario y recibe solicitudes de marcas que ya están buscando en tu zona.</p>
-      <a href="#" class="btn btn-orange" style="align-self:flex-start;">Quiero ser aliado</a>
+      <a href="#" class="btn btn-orange" style="align-self:flex-start;" onclick="openModal('modal-ally');return false;">Quiero ser aliado</a>
     </div>
   </div>
 </section>
+
+<div class="modal-overlay" id="modal-request">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-request')" aria-label="Cerrar">✕</button>
+    <h3 class="display">SOLICITA UN ESPACIO</h3>
+    <p class="modal-sub">Cuéntanos qué buscas y te conectamos con opciones reales en menos de 48 horas.</p>
+    <form id="form-request">
+      <div class="field"><label for="req-brand">Marca / empresa</label><input id="req-brand" name="brand_name" type="text" required></div>
+      <div class="field"><label for="req-email">Correo</label><input id="req-email" name="contact_email" type="email" required></div>
+      <div class="field"><label for="req-phone">Teléfono (opcional)</label><input id="req-phone" name="contact_phone" type="tel"></div>
+      <div class="field"><label for="req-city">Ciudad</label><input id="req-city" name="city" type="text" required></div>
+      <div class="field"><label for="req-type">Tipo de espacio</label>
+        <select id="req-type" name="spot_type">
+          <option value="">Sin preferencia</option>
+          <option>Espectacular</option><option>Mupi</option><option>Valla</option>
+          <option>Pantalla digital</option><option>Parabús</option>
+        </select>
+      </div>
+      <div class="field"><label for="req-budget">Presupuesto mensual</label>
+        <select id="req-budget" name="budget_range">
+          <option value="">Cualquiera</option>
+          <option>Hasta $5,000 MXN</option><option>$5,000 – $20,000 MXN</option><option>$20,000+ MXN</option>
+        </select>
+      </div>
+      <div class="field"><label for="req-msg">Mensaje (opcional)</label><textarea id="req-msg" name="message"></textarea></div>
+      <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+      <p class="form-msg" id="req-msg-status"></p>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-ally">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-ally')" aria-label="Cerrar">✕</button>
+    <h3 class="display">REGISTRA TU INVENTARIO</h3>
+    <p class="modal-sub">Súmate como aliado OOH y recibe solicitudes de marcas en tu zona. Sin costo por listar.</p>
+    <form id="form-ally">
+      <div class="field"><label for="ally-company">Empresa</label><input id="ally-company" name="company_name" type="text" required></div>
+      <div class="field"><label for="ally-name">Nombre de contacto</label><input id="ally-name" name="contact_name" type="text" required></div>
+      <div class="field"><label for="ally-email">Correo</label><input id="ally-email" name="contact_email" type="email" required></div>
+      <div class="field"><label for="ally-phone">Teléfono (opcional)</label><input id="ally-phone" name="contact_phone" type="tel"></div>
+      <div class="field"><label for="ally-city">Ciudad</label><input id="ally-city" name="city" type="text" required></div>
+      <div class="field"><label for="ally-desc">Describe tu inventario (opcional)</label><textarea id="ally-desc" name="inventory_description" placeholder="Ej. 12 espectaculares en Monterrey, 5 mupis en Guadalajara..."></textarea></div>
+      <button class="btn btn-orange" type="submit">Enviar registro</button>
+      <p class="form-msg" id="ally-msg-status"></p>
+    </form>
+  </div>
+</div>
 
 <footer>
   <div class="wrap">
@@ -699,24 +791,104 @@
     </svg>`;
   }
 
-  const grid = document.getElementById('cardGrid');
-  grid.innerHTML = SPOTS.map((s,i) => `
-    <article class="card">
-      <div class="card-media">
-        ${skyline(s.tone)}
-        <span class="badge"><span class="dot"></span>${s.type}</span>
-        <button class="fav" aria-label="Agregar a favoritos" onclick="this.classList.toggle('active')">
-          <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8 2.2 4.5 5.7 4c2-.3 3.9.7 6.3 3 2.4-2.3 4.3-3.3 6.3-3 3.5.5 5.3 4 3.7 7.8C19.5 16.4 12 21 12 21z"/></svg>
-        </button>
-      </div>
-      <div class="card-body">
-        <p class="card-loc">${s.loc}</p>
-        <p class="card-city">${s.city}</p>
-        <div class="card-foot">
-          <div class="price mono">$${s.price}<small>MXN / mes con IVA</small></div>
-          <a href="#" class="card-link">Ver espacio →</a>
+  function toneFor(type){
+    const map = {"Espectacular":0,"Mupi":1,"Valla":2,"Pantalla digital":3,"Parabús":4,"Puente peatonal":2};
+    return map[type] ?? 0;
+  }
+
+  function renderGrid(spots){
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = spots.map((s) => `
+      <article class="card">
+        <div class="card-media">
+          ${skyline(s.tone)}
+          <span class="badge"><span class="dot"></span>${s.type}</span>
+          <button class="fav" aria-label="Agregar a favoritos" onclick="this.classList.toggle('active')">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8 2.2 4.5 5.7 4c2-.3 3.9.7 6.3 3 2.4-2.3 4.3-3.3 6.3-3 3.5.5 5.3 4 3.7 7.8C19.5 16.4 12 21 12 21z"/></svg>
+          </button>
         </div>
-      </div>
-    </article>
-  `).join('');
+        <div class="card-body">
+          <p class="card-loc">${s.loc}</p>
+          <p class="card-city">${s.city}</p>
+          <div class="card-foot">
+            <div class="price mono">$${s.price}<small>MXN / mes con IVA</small></div>
+            <a href="#" class="card-link">Ver espacio →</a>
+          </div>
+        </div>
+      </article>
+    `).join('');
+    const countEl = document.querySelector('.filter-count');
+    if (countEl) countEl.textContent = spots.length + ' espacios disponibles';
+  }
+
+  renderGrid(SPOTS);
+
+  // ---------- Supabase ----------
+  const SUPABASE_URL = 'https://hfpfiukhvzpcontotllj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmcGZpdWtodnpwY29udG90bGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODIxMDYsImV4cCI6MjEwMzI1ODEwNn0.NjBtfsn8hYxSREKdjQ2pPC66XPTSx7sbOb7tLsW8Utw';
+  const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  async function loadSpotsFromSupabase(){
+    if (!sb) return;
+    const { data, error } = await sb.from('spots').select('*').eq('status', 'disponible').order('created_at', { ascending: false });
+    if (error || !data || !data.length) return;
+    const mapped = data.map(row => ({
+      type: row.spot_type,
+      loc: row.location,
+      city: row.city,
+      price: Number(row.price_mxn).toLocaleString('es-MX'),
+      tone: toneFor(row.spot_type),
+    }));
+    renderGrid(mapped);
+  }
+  loadSpotsFromSupabase();
+
+  // ---------- Modals ----------
+  function openModal(id){
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id){
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.modal-overlay').forEach(ov => {
+    ov.addEventListener('click', (e) => { if (e.target === ov) closeModal(ov.id); });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(ov => closeModal(ov.id));
+  });
+
+  function showFormMsg(el, text, ok){
+    el.textContent = text;
+    el.className = 'form-msg show ' + (ok ? 'ok' : 'err');
+  }
+
+  async function handleFormSubmit(e, table, statusElId, modalId){
+    e.preventDefault();
+    const form = e.target;
+    const statusEl = document.getElementById(statusElId);
+    const btn = form.querySelector('button[type="submit"]');
+    if (!sb){
+      showFormMsg(statusEl, 'No se pudo conectar. Intenta de nuevo más tarde.', false);
+      return;
+    }
+    const payload = Object.fromEntries(new FormData(form).entries());
+    Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
+    btn.disabled = true;
+    const { error } = await sb.from(table).insert(payload);
+    btn.disabled = false;
+    if (error){
+      showFormMsg(statusEl, 'Hubo un error al enviar. Intenta de nuevo.', false);
+      return;
+    }
+    showFormMsg(statusEl, '¡Listo! Te contactaremos pronto.', true);
+    form.reset();
+    setTimeout(() => closeModal(modalId), 1400);
+  }
+
+  document.getElementById('form-request').addEventListener('submit', (e) => handleFormSubmit(e, 'space_requests', 'req-msg-status', 'modal-request'));
+  document.getElementById('form-ally').addEventListener('submit', (e) => handleFormSubmit(e, 'ally_signups', 'ally-msg-status', 'modal-ally'));
 </script>
+</body>
+</html>
