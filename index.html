@@ -510,30 +510,31 @@
 
 <div class="filterbar">
   <div class="wrap filter-row">
-    <select aria-label="Ciudad">
-      <option>Ciudad — Todas</option>
+    <select aria-label="Ciudad" id="filter-city">
+      <option value="">Ciudad — Todas</option>
       <option>Ciudad de México</option>
       <option>Monterrey</option>
       <option>Guadalajara</option>
       <option>Cuernavaca</option>
       <option>Puebla</option>
     </select>
-    <select aria-label="Tipo de espacio">
-      <option>Tipo — Todos</option>
+    <select aria-label="Tipo de espacio" id="filter-type">
+      <option value="">Tipo — Todos</option>
       <option>Espectacular</option>
       <option>Mupi</option>
       <option>Valla</option>
       <option>Pantalla digital</option>
       <option>Parabús</option>
     </select>
-    <select aria-label="Presupuesto mensual">
-      <option>Presupuesto — Cualquiera</option>
-      <option>Hasta $5,000 MXN</option>
-      <option>$5,000 – $20,000 MXN</option>
-      <option>$20,000+ MXN</option>
+    <select aria-label="Presupuesto mensual" id="filter-budget">
+      <option value="">Presupuesto — Cualquiera</option>
+      <option value="0-5000">Hasta $5,000 MXN</option>
+      <option value="5000-20000">$5,000 – $20,000 MXN</option>
+      <option value="20000-">$20,000+ MXN</option>
     </select>
-    <button class="btn btn-primary">Buscar</button>
-    <span class="filter-count mono">128 espacios disponibles</span>
+    <button class="btn btn-primary" id="filter-search-btn">Buscar</button>
+    <button class="btn btn-ghost" id="filter-clear-btn" type="button">Limpiar</button>
+    <span class="filter-count mono" id="filter-count">128 espacios disponibles</span>
   </div>
 </div>
 
@@ -798,6 +799,12 @@
 
   function renderGrid(spots){
     const grid = document.getElementById('cardGrid');
+    if (!spots.length){
+      grid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);font-size:14px;padding:20px 0;">No encontramos espacios con esos filtros. Prueba con otra ciudad, tipo o presupuesto.</p>`;
+      const countEl = document.getElementById('filter-count');
+      if (countEl) countEl.textContent = '0 espacios disponibles';
+      return;
+    }
     grid.innerHTML = spots.map((s) => `
       <article class="card">
         <div class="card-media">
@@ -817,7 +824,7 @@
         </div>
       </article>
     `).join('');
-    const countEl = document.querySelector('.filter-count');
+    const countEl = document.getElementById('filter-count');
     if (countEl) countEl.textContent = spots.length + ' espacios disponibles';
   }
 
@@ -828,11 +835,26 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmcGZpdWtodnpwY29udG90bGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODIxMDYsImV4cCI6MjEwMzI1ODEwNn0.NjBtfsn8hYxSREKdjQ2pPC66XPTSx7sbOb7tLsW8Utw';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-  async function loadSpotsFromSupabase(){
+  let usingLiveData = false;
+
+  async function loadSpotsFromSupabase(filters){
+    filters = filters || {};
     if (!sb) return;
-    const { data, error } = await sb.from('spots').select('*').eq('status', 'disponible').order('created_at', { ascending: false });
-    if (error || !data || !data.length) return;
-    const mapped = data.map(row => ({
+    let query = sb.from('spots').select('*').eq('status', 'disponible');
+    if (filters.city) query = query.ilike('city', `%${filters.city}%`);
+    if (filters.type) query = query.eq('spot_type', filters.type);
+    if (filters.min != null) query = query.gte('price_mxn', filters.min);
+    if (filters.max != null) query = query.lte('price_mxn', filters.max);
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+    if (error){
+      if (!usingLiveData) return; // keep demo fallback on first load if it fails
+      renderGrid([]);
+      return;
+    }
+    usingLiveData = true;
+    const mapped = (data || []).map(row => ({
       type: row.spot_type,
       loc: row.location,
       city: row.city,
@@ -842,6 +864,27 @@
     renderGrid(mapped);
   }
   loadSpotsFromSupabase();
+
+  function parseBudget(value){
+    if (!value) return { min: null, max: null };
+    const [min, max] = value.split('-');
+    return { min: min ? Number(min) : null, max: max ? Number(max) : null };
+  }
+
+  function runFilters(){
+    const city = document.getElementById('filter-city').value;
+    const type = document.getElementById('filter-type').value;
+    const { min, max } = parseBudget(document.getElementById('filter-budget').value);
+    loadSpotsFromSupabase({ city, type, min, max });
+  }
+
+  document.getElementById('filter-search-btn').addEventListener('click', runFilters);
+  document.getElementById('filter-clear-btn').addEventListener('click', () => {
+    document.getElementById('filter-city').value = '';
+    document.getElementById('filter-type').value = '';
+    document.getElementById('filter-budget').value = '';
+    loadSpotsFromSupabase();
+  });
 
   // ---------- Modals ----------
   function openModal(id){
