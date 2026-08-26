@@ -223,8 +223,9 @@
 
   /* ---------- FEED ---------- */
   .feed{padding:32px 0 12px;}
-  .feed-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
-  .feed-head h2{font-size:30px;margin:0;}
+  .feed-head{margin-bottom:22px;}
+  .feed-head h2{font-size:30px;margin:0 0 8px;}
+  .feed-sub{color:var(--muted);font-size:14px;line-height:1.55;max-width:62ch;margin:0;}
   .grid{
     display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
   }
@@ -640,8 +641,10 @@
 <section class="feed" id="feed">
   <div class="wrap">
     <div class="feed-head">
-      <h2 class="display">EN LA RED AHORA</h2>
-      <a href="#" class="card-link">Ver mapa completo →</a>
+      <div>
+        <h2 class="display">PRECIOS DE REFERENCIA</h2>
+        <p class="feed-sub">Ejemplos de cómo ronda el mercado por zona y formato — no son espacios asignados todavía. El precio final varía según ubicación exacta, disponibilidad y otros factores; cuéntanos qué buscas y te damos una cotización real.</p>
+      </div>
     </div>
     <div class="grid" id="cardGrid"></div>
     <div class="loadmore"><button class="btn btn-ghost">Cargar más espacios</button></div>
@@ -681,9 +684,9 @@
 <section class="portfolio" id="portfolio">
   <div class="wrap">
     <div class="portfolio-head">
-      <p class="eyebrow">Trabajo realizado</p>
+      <p class="eyebrow">Mockups generados con IA</p>
       <h2 class="display">ASÍ SE VE UN ESPACIO OCUPADO</h2>
-      <p>Piezas reales montadas sobre espectaculares, paradas de autobús y formatos sociales. Toca cualquiera para verla completa.</p>
+      <p>Cada pieza es un concepto visual creado con inteligencia artificial — no es una fotografía real del espacio instalado, sino una simulación de cómo se vería tu campaña montada en calle. Toca cualquiera para verla completa.</p>
     </div>
     <div class="portfolio-grid" id="portfolioGrid"></div>
     <div id="portfolioSentinel" style="height:1px;"></div>
@@ -839,15 +842,15 @@
 
 <script>
   const SPOTS = [
-    {type:"Espectacular", loc:"Autopista México–Acapulco Km 84", city:"Cuernavaca, Morelos", price:"17,400", tone:0},
-    {type:"Mupi", loc:"Av. Domingo Diez 1101, Lomas de la Selva", city:"Cuernavaca, Morelos", price:"4,292", tone:1},
-    {type:"Valla", loc:"Av. Compositores 101, Rancho Tetela", city:"Cuernavaca, Morelos", price:"6,032", tone:2},
-    {type:"Pantalla digital", loc:"Av. Insurgentes Sur 1457", city:"Ciudad de México", price:"38,500", tone:3},
-    {type:"Espectacular", loc:"Av. Constitución y Garza Sada", city:"Monterrey, N.L.", price:"22,900", tone:0},
-    {type:"Parabús", loc:"Av. Vallarta 3200, Zapopan", city:"Guadalajara, Jal.", price:"5,150", tone:4},
-    {type:"Mupi", loc:"Blvd. Díaz Ordaz 87, Acapantzingo", city:"Cuernavaca, Morelos", price:"4,292", tone:1},
-    {type:"Valla", loc:"Del Ferrocarril, Patios de la Estación", city:"Cuernavaca, Morelos", price:"6,032", tone:2},
-    {type:"Espectacular", loc:"Periférico Sur y Anillo Vial", city:"Puebla, Pue.", price:"19,800", tone:0},
+    {type:"Espectacular", loc:"Zona autopista México–Acapulco", city:"Cuernavaca, Morelos", price:"17,400", tone:0},
+    {type:"Mupi", loc:"Zona Lomas de la Selva", city:"Cuernavaca, Morelos", price:"4,292", tone:1},
+    {type:"Valla", loc:"Zona Rancho Tetela", city:"Cuernavaca, Morelos", price:"6,032", tone:2},
+    {type:"Pantalla digital", loc:"Zona Insurgentes Sur", city:"Ciudad de México", price:"38,500", tone:3},
+    {type:"Espectacular", loc:"Zona Garza Sada", city:"Monterrey, N.L.", price:"22,900", tone:0},
+    {type:"Parabús", loc:"Zona Vallarta, Zapopan", city:"Guadalajara, Jal.", price:"5,150", tone:4},
+    {type:"Mupi", loc:"Zona Acapantzingo", city:"Cuernavaca, Morelos", price:"4,292", tone:1},
+    {type:"Valla", loc:"Zona Patios de la Estación", city:"Cuernavaca, Morelos", price:"6,032", tone:2},
+    {type:"Espectacular", loc:"Zona Periférico Sur", city:"Puebla, Pue.", price:"19,800", tone:0},
   ];
 
   const TONES = [
@@ -905,7 +908,7 @@
           <p class="card-loc">${s.loc}</p>
           <p class="card-city">${s.city}</p>
           <div class="card-foot">
-            <div class="price mono">$${s.price}<small>MXN / mes con IVA</small></div>
+            <div class="price mono">$${s.price}<small>MXN / mes · precio referencial</small></div>
             <a href="#" class="card-link">Ver espacio →</a>
           </div>
         </div>
